@@ -3,7 +3,7 @@
 import { gsap } from "gsap";
 import React, { useEffect, useState } from "react";
 
-const Scrollbar = () => {
+const Scrollbar = ({ totalMessage }) => {
   const [scrollBar, setScrollBar] = useState({
     offsetHeight: 0,
     scrollHeight: 0,
@@ -24,7 +24,7 @@ const Scrollbar = () => {
       opacity: 0,
       delay: 1,
     });
-  }, []);
+  }, [totalMessage]);
 
   useEffect(() => {
     let timer = null;
@@ -47,9 +47,12 @@ const Scrollbar = () => {
         // do something
         tl.to("#thumb", {
           opacity: 0,
-          duration: 0.2,
+          duration: 0.1,
         });
-      }, 500);
+      }, 1500);
+      return () => {
+        tl.kill();
+      };
     };
     document
       .getElementById("chat-container")
@@ -68,7 +71,7 @@ const Scrollbar = () => {
     >
       <span
         id="thumb"
-        className="bg-gray-400 rounded-full absolute"
+        className="bg-gray-500 rounded-full absolute"
         style={{
           height: 0,
           width: 6,

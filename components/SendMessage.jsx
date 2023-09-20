@@ -1,8 +1,10 @@
 "use client";
 
+import { Power2, gsap } from "gsap";
+import { ScrollToPlugin } from "gsap/all";
 import React, { useEffect, useRef, useState } from "react";
 
-const SendMessage = ({ chatId, setChatRoom }) => {
+const SendMessage = ({ chatId, setChatRoom, myId, typingId }) => {
   const inputRef = useRef(null);
   const formRef = useRef(null);
 
@@ -17,19 +19,35 @@ const SendMessage = ({ chatId, setChatRoom }) => {
         const data = new FormData(formRef.current);
         const message = data.get("message");
         inputRef.current.value = "";
+        inputRef.current.style.height = "0px";
+        inputRef.current.style.height = inputRef.current.scrollHeight + "px";
+        gsap.fromTo(
+          "#typing-block",
+          {
+            x: 0,
+            opacity: 1,
+            duration: 0.5,
+          },
+          {
+            opacity: 0,
+            x: myId === typingId ? -50 : 50,
+          }
+        );
         const response = await fetch("/api/message", {
           method: "POST",
           body: JSON.stringify({
-            userId: "1",
+            userId: myId,
             message,
             chatId,
           }),
         });
-        const newMessage = await response.json();
-        setChatRoom((prev) => ({
-          ...prev,
-          messages: [...prev.messages, newMessage],
-        }));
+        await fetch(`/api/typing/${chatId}`, {
+          method: "POST",
+          body: JSON.stringify({
+            userId: myId,
+            typing: false,
+          }),
+        });
       }
     };
     document.addEventListener("input", resizeInput);
@@ -38,26 +56,75 @@ const SendMessage = ({ chatId, setChatRoom }) => {
       document.removeEventListener("input", resizeInput);
       document.removeEventListener("keydown", onEnterKey);
     };
-  }, []);
+  }, [myId]);
 
   const onSubmit = async (e) => {
     e.preventDefault();
     const data = new FormData(formRef.current);
     const message = data.get("message");
     inputRef.current.value = "";
+    inputRef.current.style.height = "0px";
+    inputRef.current.style.height = inputRef.current.scrollHeight + "px";
+    gsap.fromTo(
+      "#typing-block",
+      {
+        x: 0,
+        opacity: 1,
+        duration: 0.5,
+      },
+      {
+        opacity: 0,
+        x: myId === typingId ? -50 : 50,
+      }
+    );
+
     const response = await fetch("/api/message", {
       method: "POST",
       body: JSON.stringify({
-        userId: "1",
+        userId: myId,
         message,
         chatId,
       }),
     });
-    const newMessage = await response.json();
-    setChatRoom((prev) => ({
-      ...prev,
-      messages: [...prev.messages, newMessage],
-    }));
+    await fetch(`/api/typing/${chatId}`, {
+      method: "POST",
+      body: JSON.stringify({
+        userId: myId,
+        typing: false,
+      }),
+    });
+  };
+
+  const handleInput = (e) => {
+    if (e.target.value.length > 0) {
+      fetch(`/api/typing/${chatId}`, {
+        method: "POST",
+        body: JSON.stringify({
+          userId: myId,
+          typing: true,
+        }),
+      });
+    } else {
+      gsap.fromTo(
+        "#typing-block",
+        {
+          x: 0,
+          opacity: 1,
+          duration: 0.5,
+        },
+        {
+          opacity: 0,
+          x: myId === typingId ? -50 : 50,
+        }
+      );
+      fetch(`/api/typing/${chatId}`, {
+        method: "POST",
+        body: JSON.stringify({
+          userId: myId,
+          typing: false,
+        }),
+      });
+    }
   };
 
   return (
@@ -72,6 +139,7 @@ const SendMessage = ({ chatId, setChatRoom }) => {
         type="submit"
         name="message"
         style={{ height: 40 }}
+        onChange={handleInput}
       />
       <button
         type="submit"
