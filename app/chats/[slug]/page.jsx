@@ -100,8 +100,6 @@ const ChatRoom = ({ params }) => {
           ease: Power2.easeOut,
         });
       } else {
-        console.log(document.getElementById("typing-block"));
-        console.log(myId, data.userId);
         await gsap.fromTo(
           document.getElementById("typing-block"),
           {
