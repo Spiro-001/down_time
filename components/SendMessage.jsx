@@ -1,7 +1,6 @@
 "use client";
 
-import { Power2, gsap } from "gsap";
-import { ScrollToPlugin } from "gsap/all";
+import { gsap } from "gsap";
 import React, { useEffect, useRef, useState } from "react";
 
 const SendMessage = ({ chatId, setChatRoom, myId, typingId }) => {
@@ -18,36 +17,38 @@ const SendMessage = ({ chatId, setChatRoom, myId, typingId }) => {
         e.preventDefault();
         const data = new FormData(formRef.current);
         const message = data.get("message");
-        inputRef.current.value = "";
-        inputRef.current.style.height = "0px";
-        inputRef.current.style.height = inputRef.current.scrollHeight + "px";
-        gsap.fromTo(
-          "#typing-block",
-          {
-            x: 0,
-            opacity: 1,
-            duration: 0.5,
-          },
-          {
-            opacity: 0,
-            x: myId === typingId ? -50 : 50,
-          }
-        );
-        const response = await fetch("/api/message", {
-          method: "POST",
-          body: JSON.stringify({
-            userId: myId,
-            message,
-            chatId,
-          }),
-        });
-        await fetch(`/api/typing/${chatId}`, {
-          method: "POST",
-          body: JSON.stringify({
-            userId: myId,
-            typing: false,
-          }),
-        });
+        if (message.length > 0) {
+          inputRef.current.value = "";
+          inputRef.current.style.height = "0px";
+          inputRef.current.style.height = inputRef.current.scrollHeight + "px";
+          // gsap.fromTo(
+          //   "#typing-block",
+          //   {
+          //     x: 0,
+          //     opacity: 1,
+          //     duration: 0.5,
+          //   },
+          //   {
+          //     opacity: 0,
+          //     x: myId === typingId ? -50 : 50,
+          //   }
+          // );
+          const response = await fetch("/api/message", {
+            method: "POST",
+            body: JSON.stringify({
+              userId: myId,
+              message,
+              chatId,
+            }),
+          });
+          await fetch(`/api/typing/${chatId}`, {
+            method: "POST",
+            body: JSON.stringify({
+              userId: myId,
+              typing: false,
+            }),
+          });
+        }
       }
     };
     document.addEventListener("input", resizeInput);
@@ -65,18 +66,18 @@ const SendMessage = ({ chatId, setChatRoom, myId, typingId }) => {
     inputRef.current.value = "";
     inputRef.current.style.height = "0px";
     inputRef.current.style.height = inputRef.current.scrollHeight + "px";
-    gsap.fromTo(
-      "#typing-block",
-      {
-        x: 0,
-        opacity: 1,
-        duration: 0.5,
-      },
-      {
-        opacity: 0,
-        x: myId === typingId ? -50 : 50,
-      }
-    );
+    // gsap.fromTo(
+    //   "#typing-block",
+    //   {
+    //     x: 0,
+    //     opacity: 1,
+    //     duration: 0.5,
+    //   },
+    //   {
+    //     opacity: 0,
+    //     x: myId === typingId ? -50 : 50,
+    //   }
+    // );
 
     const response = await fetch("/api/message", {
       method: "POST",
@@ -105,18 +106,18 @@ const SendMessage = ({ chatId, setChatRoom, myId, typingId }) => {
         }),
       });
     } else {
-      gsap.fromTo(
-        "#typing-block",
-        {
-          x: 0,
-          opacity: 1,
-          duration: 0.5,
-        },
-        {
-          opacity: 0,
-          x: myId === typingId ? -50 : 50,
-        }
-      );
+      // gsap.fromTo(
+      //   "#typing-block",
+      //   {
+      //     x: 0,
+      //     opacity: 1,
+      //     duration: 0.5,
+      //   },
+      //   {
+      //     opacity: 0,
+      //     x: myId === typingId ? -50 : 50,
+      //   }
+      // );
       fetch(`/api/typing/${chatId}`, {
         method: "POST",
         body: JSON.stringify({

@@ -18,7 +18,7 @@ const Scrollbar = ({ totalMessage }) => {
       scrollHeight: scrollHeight,
     });
     gsap.to("#thumb", {
-      height: ((offsetHeight - 16) / scrollHeight) * 100 + "%",
+      height: (offsetHeight / scrollHeight) * 100 + "%",
     });
     gsap.to("#thumb", {
       opacity: 0,
@@ -37,7 +37,7 @@ const Scrollbar = ({ totalMessage }) => {
         duration: 0.2,
       });
       tl.to("#thumb", {
-        top: ((scrollTop + 5) / scrollHeight) * 100 + "%",
+        top: (scrollTop / scrollHeight) * 100 + "%",
         duration: 0,
       });
       if (timer !== null) {
@@ -47,7 +47,7 @@ const Scrollbar = ({ totalMessage }) => {
         // do something
         tl.to("#thumb", {
           opacity: 0,
-          duration: 0.1,
+          duration: 0.2,
         });
       }, 1500);
       return () => {
@@ -69,14 +69,16 @@ const Scrollbar = ({ totalMessage }) => {
       className="absolute right-4 flex justify-center py-2"
       style={{ height: scrollBar.offsetHeight, width: 10 }}
     >
-      <span
-        id="thumb"
-        className="bg-gray-500 rounded-full absolute"
-        style={{
-          height: 0,
-          width: 6,
-        }}
-      />
+      <div className="w-full relative flex justify-center">
+        <span
+          id="thumb"
+          className="bg-gray-500 rounded-full absolute"
+          style={{
+            height: 0,
+            width: 6,
+          }}
+        />
+      </div>
     </div>
   );
 };

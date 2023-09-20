@@ -29,18 +29,18 @@ model Chat {
 
 model ChatUser {
   id     String @id @default(uuid())
-  user   User   @relation(fields: [userId], references: [id])
-  chat   Chat   @relation(fields: [chatId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chat   Chat   @relation(fields: [chatId], references: [id], onDelete: Cascade)
   userId String
   chatId String
 }
 
 model Message {
   id        String   @id @default(uuid())
-  author    User     @relation(fields: [userId], references: [id])
+  author    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
   message   String
-  chat      Chat     @relation(fields: [chatId], references: [id])
+  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
   chatId    String
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt

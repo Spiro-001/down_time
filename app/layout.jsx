@@ -18,10 +18,7 @@ export default async function RootLayout({ children }) {
     <html lang="en">
       <body className={inter.className}>
         <Provider>
-          <div className="flex">
-            <MyChats />
-            {children}
-          </div>
+          <div className="flex">{children}</div>
         </Provider>
       </body>
     </html>

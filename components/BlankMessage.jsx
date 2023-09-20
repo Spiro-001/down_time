@@ -56,7 +56,7 @@ const BlankMessage = ({ myId, typingId }) => {
       id="typing-block"
       className={`${
         myId === typingId ? "bg-blue-200" : "bg-red-50 ml-auto"
-      } px-3 py-1 mr-4 rounded-md break-words relative flex items-center justify-between w-fit`}
+      } px-3 py-1 rounded-md break-words relative flex items-center justify-between w-fit`}
     >
       <span id="dot">•</span>
       <span id="dot">•</span>

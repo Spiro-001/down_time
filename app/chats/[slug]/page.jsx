@@ -10,6 +10,7 @@ import { toPusherKey } from "@/utils/toPusherKey";
 import { Power2, gsap } from "gsap";
 import { ScrollToPlugin, ScrollTrigger } from "gsap/all";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 // data = {
@@ -41,12 +42,16 @@ const ChatRoom = ({ params }) => {
   loginIsRequiredClient();
   const session = useSession();
   const myId = session.data?.id;
+  const router = useRouter();
 
   const chatRef = useRef(null);
 
   const [extra, setExtra] = useState({
     timeVisible: false,
-    isTyping: false,
+    isTyping: {
+      userId: null,
+      typing: false,
+    },
   });
 
   const [chatRoom, setChatRoom] = useState({
@@ -54,37 +59,71 @@ const ChatRoom = ({ params }) => {
     users: [],
     messages: [],
     name: "Loading...",
+    dne: false,
   });
+
+  if (chatRoom.dne) router.push("/chats?error=dne");
 
   useEffect(() => {
     const getMessages = async () => {
       const res = await fetch(`/api/messages/${params.slug}`);
       const data = await res.json();
-      setChatRoom(data);
+      if (!data) {
+        setChatRoom({
+          id: params.slug,
+          users: [],
+          messages: [],
+          name: "Loading...",
+          dne: true,
+        });
+      } else {
+        setChatRoom(data);
+      }
     };
     pusherClient.subscribe(toPusherKey(`user:${params.slug}:incoming_message`));
     pusherClient.subscribe(toPusherKey(`user:${params.slug}:typing_message`));
+    pusherClient.subscribe(toPusherKey(`user:${params.slug}:update_chat`));
     const messageRequestHandler = (data) => {
       setChatRoom((prev) => ({
         ...prev,
         messages: [...prev.messages, data],
       }));
     };
-    const typingRequestHandler = (data) => {
+    const typingRequestHandler = async (data) => {
       gsap.registerPlugin(ScrollToPlugin);
       const chatContainer = document.getElementById("chat-container");
-      console.log(data.typing);
+      console.log(data);
       if (data.typing) {
         gsap.to("#chat-container", {
           scrollTo: { x: 0, y: chatContainer.scrollHeight },
           duration: 0.2,
           ease: Power2.easeOut,
         });
+      } else {
+        console.log(document.getElementById("typing-block"));
+        console.log(myId, data.userId);
+        await gsap.fromTo(
+          document.getElementById("typing-block"),
+          {
+            x: 0,
+            opacity: 1,
+            duration: 0.5,
+          },
+          {
+            opacity: 0,
+            x: myId === data.userId ? -50 : 50,
+          }
+        );
       }
+      console.log("23");
       setExtra((prev) => ({ ...prev, isTyping: data }));
+    };
+    const updateChatRequestHandler = (data) => {
+      setChatRoom((prev) => ({ ...prev, name: data.name }));
     };
     pusherClient.bind("incoming_message", messageRequestHandler);
     pusherClient.bind("typing_message", typingRequestHandler);
+    pusherClient.bind("typing_message", updateChatRequestHandler);
     getMessages();
 
     return () => {
@@ -94,14 +133,16 @@ const ChatRoom = ({ params }) => {
       pusherClient.unsubscribe(
         toPusherKey(`user:${params.slug}:typing_message`)
       );
+      pusherClient.unsubscribe(toPusherKey(`user:${params.slug}:update_chat`));
       pusherClient.unbind("incoming_message", messageRequestHandler);
       pusherClient.unbind("typing_message", messageRequestHandler);
+      pusherClient.unbind("typing_message", updateChatRequestHandler);
     };
-  }, []);
+  }, [myId]);
 
   useEffect(() => {
     const showTime = (e) => {
-      if (e.code === "KeyT" && e.shiftKey) {
+      if (e.code === "KeyT" && e.altKey) {
         console.log(extra.timeVisible);
         if (!extra.timeVisible) {
           gsap.to("#m-time", {
@@ -118,20 +159,20 @@ const ChatRoom = ({ params }) => {
         }
       }
     };
-    document.addEventListener("keypress", showTime);
+    document.addEventListener("keydown", showTime);
     return () => {
-      document.removeEventListener("keypress", showTime);
+      document.removeEventListener("keydown", showTime);
     };
   }, [extra.timeVisible]);
 
   useEffect(() => {
     gsap.registerPlugin(ScrollToPlugin);
     const chatContainer = document.getElementById("chat-container");
-    // gsap.to("#chat-container", {
-    //   scrollTo: { x: 0, y: chatContainer.scrollHeight },
-    //   duration: 1.5,
-    //   ease: Power2.easeOut,
-    // });
+    gsap.to("#chat-container", {
+      scrollTo: { x: 0, y: chatContainer.scrollHeight },
+      duration: 0,
+      ease: Power2.easeOut,
+    });
     gsap.to("#message-block-left", {
       x: 0,
       stagger: {
@@ -163,7 +204,7 @@ const ChatRoom = ({ params }) => {
             <div
               id="chat-container"
               ref={chatRef}
-              style={{ height: 780 }}
+              style={{ height: 700 }}
               className="flex-1 flex flex-col pl-6 pr-6 pt-3 pb-3 h-full relative gap-y-1 bg-gray-50 rounded-md border border-gray-100 shadow-sm overflow-x-hidden overflow-y-auto"
             >
               {chatRoom.messages.map((message, idx) => {
@@ -181,7 +222,7 @@ const ChatRoom = ({ params }) => {
                   const monthBefore = dateBefore.getMonth() + 1;
                   const dayBefore = dateBefore.getDate();
                   return (
-                    <>
+                    <div key={message.id}>
                       {month * day > monthBefore * dayBefore && (
                         <span className="w-full flex justify-center pb-1 mb-2 border-b-2 border-gray-200 font-bold text-slate-700">
                           {date.toLocaleDateString("en-US", {
@@ -192,13 +233,12 @@ const ChatRoom = ({ params }) => {
                         </span>
                       )}
                       <Message
-                        key={message.id}
                         message={message}
                         myId={myId}
                         samePerson={true}
                         idx={idx}
                       />
-                    </>
+                    </div>
                   );
                 } else if (
                   idx !== 0 &&
@@ -214,7 +254,7 @@ const ChatRoom = ({ params }) => {
                   const monthBefore = dateBefore.getMonth() + 1;
                   const dayBefore = dateBefore.getDate();
                   return (
-                    <>
+                    <div key={message.id}>
                       {month * day > monthBefore * dayBefore && (
                         <span className="w-full flex justify-center pb-1 mb-2 border-b-2 border-gray-200 font-bold text-slate-700">
                           {date.toLocaleDateString("en-US", {
@@ -225,17 +265,16 @@ const ChatRoom = ({ params }) => {
                         </span>
                       )}
                       <Message
-                        key={message.id}
                         message={message}
                         myId={myId}
                         samePerson={false}
                         idx={idx}
                       />
-                    </>
+                    </div>
                   );
                 } else {
                   return (
-                    <>
+                    <div key={message.id}>
                       <span className="w-full flex justify-center px-8 pb-1 mb-2 border-b-2 border-gray-200 font-bold text-slate-700">
                         {new Date(message.createdAt).toLocaleDateString(
                           "en-US",
@@ -247,13 +286,12 @@ const ChatRoom = ({ params }) => {
                         )}
                       </span>
                       <Message
-                        key={message.id}
                         message={message}
                         myId={myId}
                         samePerson={false}
                         idx={idx}
                       />
-                    </>
+                    </div>
                   );
                 }
               })}
