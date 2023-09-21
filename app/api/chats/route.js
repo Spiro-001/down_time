@@ -9,15 +9,7 @@ export const GET = async (req, res) => {
       include: {
         chats: {
           include: {
-            chat: {
-              include: {
-                users: {
-                  include: {
-                    user: true,
-                  },
-                },
-              },
-            },
+            chat: true,
           },
         },
       },

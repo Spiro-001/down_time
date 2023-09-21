@@ -6,18 +6,16 @@ import {
 } from "@/utils/ConnectionPusher/utils";
 import React, { useEffect, useState } from "react";
 
-const NewConnection = ({ userInfo, chats }) => {
+const NewConnection = ({ userInfo, chats, setChats }) => {
   const [pool, setPool] = useState([]);
   const [totalOnline, setTotalOnline] = useState(0);
 
   const filteredChats = chats.map((chat) => {
-    console.log(chat.chat.users);
     return chat.chat.users.filter((user) => user.userId !== userInfo.id)[0]
       .userId;
   });
 
   const poolFilter = (member) => {
-    console.log(filteredChats);
     return member.id !== userInfo.id && !filteredChats.includes(member.id);
   };
 
@@ -69,13 +67,15 @@ const NewConnection = ({ userInfo, chats }) => {
             break;
           }
         default:
-          const chat = await fetch("/api/chat", {
+          const res = await fetch("/api/chat", {
             method: "POST",
             body: JSON.stringify({
-              users: [data.id, userInfo.id],
+              users: [data, userInfo],
             }),
           });
-
+          const chat = await res.json();
+          console.log(chat);
+          setChats((prev) => [...prev, chat]);
           break;
       }
     };

@@ -29,12 +29,6 @@ const MyChats = ({ data }) => {
     async function getChats() {
       const res = await fetch("/api/chats");
       const data = await res.json();
-      // setUserInfo({
-      //   id: data.id,
-      //   username: data.username,
-      //   membership: data.membership,
-      //   email: data.email,
-      // });
       setChats(data.chats);
     }
     const handleClick = (e) => {
@@ -89,7 +83,6 @@ const MyChats = ({ data }) => {
   };
 
   const handleDelete = async () => {
-    console.log(chats);
     setChats((prev) => prev.filter((chat) => chat.id !== contextMenu.chatId));
     const res = await fetch(`/api/chat/${contextMenu.chatId}`, {
       method: "DELETE",
@@ -97,13 +90,19 @@ const MyChats = ({ data }) => {
     router.push("/chats");
   };
 
+  console.log(chats);
+
   return (
     <div className="flex flex-col bg-red-200 px-4 py-4 gap-y-4 text-xl">
-      <NewConnection userInfo={userInfo} chats={data.chats} />
+      <NewConnection
+        userInfo={userInfo}
+        chats={data.chats}
+        setChats={setChats}
+      />
       {chats.map((chat) => (
         <Link
           href={`/chats/${chat.chatId}`}
-          key={chat.chatId}
+          key={chat.chat.id}
           contentEditable={
             contextMenu.type === "edit" && contextMenu.chatId === chat.chatId
               ? true
@@ -115,14 +114,16 @@ const MyChats = ({ data }) => {
               : undefined
           }
           className="w-full flex bg-white px-4 py-2"
-          onContextMenu={(e) => openContextMenu(e, chat.chatId)}
+          onContextMenu={(e) => openContextMenu(e, chat.chat.id)}
           onKeyDown={handleSubmit}
         >
-          {chat.chat.name ??
-            chat.chat.users
-              .map((user) => user.user.username)
-              .join(" & ")
-              .concat("'s Room")}
+          {
+            chat.chat.name
+            // chat.chat.users
+            //   .map((user) => user.user.username)
+            //   .join(" & ")
+            //   .concat("'s Room")
+          }
         </Link>
       ))}
       {contextMenu.open && (
