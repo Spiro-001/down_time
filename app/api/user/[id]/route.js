@@ -8,8 +8,19 @@ export const GET = async (res, { params }) => {
         id,
       },
       select: {
+        id: true,
+        email: true,
+        username: true,
         membership: true,
-        chats: true,
+        chats: {
+          include: {
+            chat: {
+              include: {
+                users: true,
+              },
+            },
+          },
+        },
         messages: true,
       },
     });

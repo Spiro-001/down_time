@@ -1,15 +1,19 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import NewConnection from "./NewConnection";
 
-const MyChats = () => {
-  const session = useSession();
+const MyChats = ({ data }) => {
   const router = useRouter();
-
   const contextMenuRef = useRef(null);
+  const [userInfo, setUserInfo] = useState({
+    id: data.id,
+    username: data.username,
+    membership: data.membership,
+    email: data.email,
+  });
   const [chats, setChats] = useState([]);
   const [contextMenu, setContextMenu] = useState({
     open: false,
@@ -25,6 +29,12 @@ const MyChats = () => {
     async function getChats() {
       const res = await fetch("/api/chats");
       const data = await res.json();
+      // setUserInfo({
+      //   id: data.id,
+      //   username: data.username,
+      //   membership: data.membership,
+      //   email: data.email,
+      // });
       setChats(data.chats);
     }
     const handleClick = (e) => {
@@ -89,7 +99,7 @@ const MyChats = () => {
 
   return (
     <div className="flex flex-col bg-red-200 px-4 py-4 gap-y-4 text-xl">
-      <div>new connection</div>
+      <NewConnection userInfo={userInfo} chats={data.chats} />
       {chats.map((chat) => (
         <Link
           href={`/chats/${chat.chatId}`}

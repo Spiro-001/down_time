@@ -5,7 +5,7 @@ import MemberType from "@/components/MemberType";
 import TotalConnection from "@/components/TotalConnection";
 import TotalMessage from "@/components/TotalMessage";
 import { getServerSession } from "next-auth";
-import NewConnection from "@/components/NewConnection";
+import Notification from "@/components/Notification";
 
 const Chats = async () => {
   // Protected Routes
@@ -20,7 +20,7 @@ const Chats = async () => {
         <MemberType membership={membership} />
         <TotalConnection chats={chats} />
         <TotalMessage messages={messages} />
-        <NewConnection />
+        <Notification />
       </div>
       <MarketPlace />
     </div>

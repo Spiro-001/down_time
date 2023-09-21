@@ -28,9 +28,9 @@ const Scrollbar = ({ totalMessage }) => {
 
   useEffect(() => {
     let timer = null;
+    const chatContainer = document.getElementById("chat-container");
     const moveScroll = () => {
-      const { offsetHeight, scrollHeight, scrollTop } =
-        document.getElementById("chat-container");
+      const { offsetHeight, scrollHeight, scrollTop } = chatContainer;
       const tl = gsap.timeline();
       gsap.to("#thumb", {
         opacity: 1,
@@ -54,13 +54,9 @@ const Scrollbar = ({ totalMessage }) => {
         tl.kill();
       };
     };
-    document
-      .getElementById("chat-container")
-      .addEventListener("scroll", moveScroll);
+    chatContainer.addEventListener("scroll", moveScroll);
     return () => {
-      document
-        .getElementById("chat-container")
-        .removeEventListener("scroll", moveScroll);
+      chatContainer.removeEventListener("scroll", moveScroll);
     };
   }, []);
 

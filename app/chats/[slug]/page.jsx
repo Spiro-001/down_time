@@ -121,7 +121,7 @@ const ChatRoom = ({ params }) => {
     };
     pusherClient.bind("incoming_message", messageRequestHandler);
     pusherClient.bind("typing_message", typingRequestHandler);
-    pusherClient.bind("typing_message", updateChatRequestHandler);
+    pusherClient.bind("update_chat", updateChatRequestHandler);
     getMessages();
 
     return () => {
