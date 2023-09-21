@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import NewConnection from "./NewConnection";
+import Finding from "./Finding";
 
 const MyChats = ({ data }) => {
   const router = useRouter();
@@ -14,7 +15,7 @@ const MyChats = ({ data }) => {
     membership: data.membership,
     email: data.email,
   });
-  const [chats, setChats] = useState([]);
+  const [chats, setChats] = useState(data.chats);
   const [contextMenu, setContextMenu] = useState({
     open: false,
     type: null,
@@ -26,18 +27,18 @@ const MyChats = ({ data }) => {
   });
 
   useEffect(() => {
-    async function getChats() {
-      const res = await fetch("/api/chats");
-      const data = await res.json();
-      setChats(data.chats);
-    }
+    // async function getChats() {
+    //   const res = await fetch("/api/chats");
+    //   const data = await res.json();
+    //   setChats(data.chats);
+    // }
     const handleClick = (e) => {
       if (contextMenuRef !== e.target) {
         setContextMenu((prev) => ({ ...prev, open: false }));
       }
     };
     document.addEventListener("click", handleClick);
-    getChats();
+    // getChats();
     return () => {
       document.removeEventListener("click", handleClick);
     };
@@ -83,22 +84,20 @@ const MyChats = ({ data }) => {
   };
 
   const handleDelete = async () => {
-    setChats((prev) => prev.filter((chat) => chat.id !== contextMenu.chatId));
+    setChats((prev) =>
+      prev.filter((chat) => chat.chatId !== contextMenu.chatId)
+    );
     const res = await fetch(`/api/chat/${contextMenu.chatId}`, {
       method: "DELETE",
     });
     router.push("/chats");
   };
 
-  console.log(chats);
+  console.log(data.chats);
 
   return (
     <div className="flex flex-col bg-red-200 px-4 py-4 gap-y-4 text-xl">
-      <NewConnection
-        userInfo={userInfo}
-        chats={data.chats}
-        setChats={setChats}
-      />
+      <Finding userInfo={userInfo} chats={chats} setChats={setChats} />
       {chats.map((chat) => (
         <Link
           href={`/chats/${chat.chatId}`}
@@ -117,13 +116,7 @@ const MyChats = ({ data }) => {
           onContextMenu={(e) => openContextMenu(e, chat.chat.id)}
           onKeyDown={handleSubmit}
         >
-          {
-            chat.chat.name
-            // chat.chat.users
-            //   .map((user) => user.user.username)
-            //   .join(" & ")
-            //   .concat("'s Room")
-          }
+          {chat.chat.name}
         </Link>
       ))}
       {contextMenu.open && (

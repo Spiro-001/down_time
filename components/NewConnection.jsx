@@ -4,9 +4,11 @@ import {
   presenceChannelBinder,
   presenceChannelUnBinder,
 } from "@/utils/ConnectionPusher/utils";
+import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 const NewConnection = ({ userInfo, chats, setChats }) => {
+  const router = useRouter();
   const [pool, setPool] = useState([]);
   const [totalOnline, setTotalOnline] = useState(0);
 
@@ -74,12 +76,13 @@ const NewConnection = ({ userInfo, chats, setChats }) => {
             }),
           });
           const chat = await res.json();
-          console.log(chat);
           setChats((prev) => [...prev, chat]);
+          setPool((prev) => prev.filter((user) => user.id !== data.id));
+          router.push(`/chats/${chat.chatId}`);
           break;
       }
     };
-    getUser();
+    if (user) getUser();
   };
 
   useEffect(() => {

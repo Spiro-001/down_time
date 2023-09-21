@@ -28,7 +28,6 @@ export const PATCH = async (req, res) => {
 export const POST = async (req, res) => {
   const { users } = await req.json();
   try {
-    console.log(users);
     const chat = await prisma.chat.create({
       data: {
         name: `${users[0].username} & ${users[1].username}'s Room`,
