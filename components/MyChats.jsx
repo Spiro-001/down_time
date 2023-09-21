@@ -88,46 +88,44 @@ const MyChats = () => {
   };
 
   return (
-    session.status === "authenticated" && (
-      <div className="flex flex-col bg-red-200 px-4 py-4 gap-y-4 text-xl">
-        <div>new connection</div>
-        {chats.map((chat) => (
-          <Link
-            href={`/chats/${chat.chatId}`}
-            key={chat.chatId}
-            contentEditable={
-              contextMenu.type === "edit" && contextMenu.chatId === chat.chatId
-                ? true
-                : false
-            }
-            onMouseLeave={
-              contextMenu.type === "edit" && contextMenu.chatId === chat.chatId
-                ? moveOutside
-                : undefined
-            }
-            className="w-full flex bg-white px-4 py-2"
-            onContextMenu={(e) => openContextMenu(e, chat.chatId)}
-            onKeyDown={handleSubmit}
-          >
-            {chat.chat.name ??
-              chat.chat.users
-                .map((user) => user.user.username)
-                .join(" & ")
-                .concat("'s Room")}
-          </Link>
-        ))}
-        {contextMenu.open && (
-          <div
-            id="context-menu"
-            className="flex flex-col items-start"
-            ref={contextMenuRef}
-          >
-            <button onClick={handleEdit}>Edit</button>
-            <button onClick={handleDelete}>Delete</button>
-          </div>
-        )}
-      </div>
-    )
+    <div className="flex flex-col bg-red-200 px-4 py-4 gap-y-4 text-xl">
+      <div>new connection</div>
+      {chats.map((chat) => (
+        <Link
+          href={`/chats/${chat.chatId}`}
+          key={chat.chatId}
+          contentEditable={
+            contextMenu.type === "edit" && contextMenu.chatId === chat.chatId
+              ? true
+              : false
+          }
+          onMouseLeave={
+            contextMenu.type === "edit" && contextMenu.chatId === chat.chatId
+              ? moveOutside
+              : undefined
+          }
+          className="w-full flex bg-white px-4 py-2"
+          onContextMenu={(e) => openContextMenu(e, chat.chatId)}
+          onKeyDown={handleSubmit}
+        >
+          {chat.chat.name ??
+            chat.chat.users
+              .map((user) => user.user.username)
+              .join(" & ")
+              .concat("'s Room")}
+        </Link>
+      ))}
+      {contextMenu.open && (
+        <div
+          id="context-menu"
+          className="flex flex-col items-start"
+          ref={contextMenuRef}
+        >
+          <button onClick={handleEdit}>Edit</button>
+          <button onClick={handleDelete}>Delete</button>
+        </div>
+      )}
+    </div>
   );
 };
 

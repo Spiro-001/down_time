@@ -1,6 +1,6 @@
 import { pusherServer } from "@/lib/pusher";
-import prisma from "@/prisma/client";
 import { toPusherKey } from "@/utils/toPusherKey";
+import prisma from "@/prisma/client";
 
 export const POST = async (req, res) => {
   try {
