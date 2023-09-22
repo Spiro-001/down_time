@@ -92,7 +92,6 @@ const ChatRoom = ({ params }) => {
     const typingRequestHandler = async (data) => {
       gsap.registerPlugin(ScrollToPlugin);
       const chatContainer = document.getElementById("chat-container");
-      console.log(data);
       if (data.typing) {
         gsap.to("#chat-container", {
           scrollTo: { x: 0, y: chatContainer.scrollHeight },
@@ -113,7 +112,6 @@ const ChatRoom = ({ params }) => {
           }
         );
       }
-      console.log("23");
       setExtra((prev) => ({ ...prev, isTyping: data }));
     };
     const updateChatRequestHandler = (data) => {
@@ -141,7 +139,6 @@ const ChatRoom = ({ params }) => {
   useEffect(() => {
     const showTime = (e) => {
       if (e.code === "KeyT" && e.altKey) {
-        console.log(extra.timeVisible);
         if (!extra.timeVisible) {
           gsap.to("#m-time", {
             paddingRight: 78,

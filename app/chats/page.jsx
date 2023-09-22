@@ -18,8 +18,8 @@ const Chats = async () => {
     <div className="flex-1 flex flex-col bg-gray-100 px-8 py-8 gap-y-4">
       <div className="flex gap-x-4">
         <MemberType membership={membership} />
-        <TotalConnection chats={chats} />
-        <TotalMessage messages={messages} />
+        <TotalConnection chats={chats} id={session.id} />
+        <TotalMessage messages={messages} id={session.id} />
         <Notification />
       </div>
       <MarketPlace />

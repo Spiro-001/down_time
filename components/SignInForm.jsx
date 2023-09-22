@@ -18,7 +18,7 @@ const SignInForm = () => {
     if (signInResponse && !signInResponse.error) {
       router.push("/chats");
     } else {
-      console.log("Error:  ", signInResponse);
+      console.log("Error: ", signInResponse);
     }
   };
 

@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import NewConnection from "./NewConnection";
 import Finding from "./Finding";
+import { pusherClient } from "@/lib/pusher";
+import { toPusherKey } from "@/utils/toPusherKey";
 
 const MyChats = ({ data }) => {
   const router = useRouter();
@@ -27,23 +28,36 @@ const MyChats = ({ data }) => {
   });
 
   useEffect(() => {
-    // async function getChats() {
-    //   const res = await fetch("/api/chats");
-    //   const data = await res.json();
-    //   setChats(data.chats);
-    // }
     const handleClick = (e) => {
       if (contextMenuRef !== e.target) {
         setContextMenu((prev) => ({ ...prev, open: false }));
       }
     };
+    const deleteRequestHandler = (data) => {
+      console.log(data, chats);
+      setChats((prev) =>
+        prev.filter((chat) => chat.chat.id !== data.deletedChat.id)
+      );
+    };
+    const updateRequestHandler = (data) => {
+      console.log(chats, data);
+      setChats((prev) => [...prev, { chat: data }]);
+    };
+    pusherClient.subscribe(toPusherKey(`user:${userInfo.id}:delete-chat`));
+    pusherClient.subscribe(toPusherKey(`user:${userInfo.id}:add-chat`));
+    pusherClient.bind("delete-chat", deleteRequestHandler);
+    pusherClient.bind("add-chat", updateRequestHandler);
+
     document.addEventListener("click", handleClick);
     // getChats();
     return () => {
       document.removeEventListener("click", handleClick);
+      pusherClient.unsubscribe(toPusherKey(`user:${userInfo.id}:delete-chat`));
+      pusherClient.unsubscribe(toPusherKey(`user:${userInfo.id}:add-chat`));
+      pusherClient.unbind("delete-chat", deleteRequestHandler);
+      pusherClient.unbind("add-chat", updateRequestHandler);
     };
   }, []);
-
   const openContextMenu = (e, chatId) => {
     e.preventDefault();
     setContextMenu((prev) => ({ ...prev, open: true, chatId }));
@@ -84,16 +98,15 @@ const MyChats = ({ data }) => {
   };
 
   const handleDelete = async () => {
-    setChats((prev) =>
-      prev.filter((chat) => chat.chatId !== contextMenu.chatId)
-    );
+    console.log(chats);
+    // setChats((prev) =>
+    //   prev.filter((chat) => chat.chat.id !== contextMenu.chatId)
+    // );
     const res = await fetch(`/api/chat/${contextMenu.chatId}`, {
       method: "DELETE",
     });
     router.push("/chats");
   };
-
-  console.log(data.chats);
 
   return (
     <div className="flex flex-col bg-red-200 px-4 py-4 gap-y-4 text-xl">

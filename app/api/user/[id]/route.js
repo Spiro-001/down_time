@@ -2,6 +2,7 @@ import prisma from "@/prisma/client";
 
 export const GET = async (res, { params }) => {
   const { id } = params;
+  console.log(id);
   try {
     const data = await prisma.user.findUnique({
       where: {

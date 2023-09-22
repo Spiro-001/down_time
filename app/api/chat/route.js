@@ -1,7 +1,6 @@
 import prisma from "@/prisma/client";
 import { pusherServer } from "@/lib/pusher";
 import { toPusherKey } from "@/utils/toPusherKey";
-import { data } from "autoprefixer";
 
 export const PATCH = async (req, res) => {
   const { id, name } = await req.json();
@@ -39,9 +38,22 @@ export const POST = async (req, res) => {
         { userId: users[1].id, chatId: chat.id },
       ],
     });
+    pusherServer.trigger(
+      toPusherKey(`user:${users[0].id}:add-chat`),
+      "add-chat",
+      { ...chat, users: [users[0].id, users[1].id] }
+    );
+    pusherServer.trigger(
+      toPusherKey(`user:${users[1].id}:add-chat`),
+      "add-chat",
+      { ...chat, users: [users[0].id, users[1].id] }
+    );
     return new Response(
       JSON.stringify({
-        chat,
+        chat: {
+          ...chat,
+          users: [{ userId: users[0].id }, { userId: users[1].id }],
+        },
         chatId: chat.id,
       }),
       { status: 200 }
