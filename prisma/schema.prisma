@@ -30,7 +30,7 @@ model Chat {
 
 model ChatUser {
   id     String @id @default(uuid())
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  users  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   chat   Chat   @relation(fields: [chatId], references: [id], onDelete: Cascade)
   userId String
   chatId String
@@ -43,6 +43,12 @@ model Message {
   message   String
   chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
   chatId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model TempPublicKey {
+  id        String   @id @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 }

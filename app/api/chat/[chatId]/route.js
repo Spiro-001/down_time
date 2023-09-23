@@ -5,7 +5,7 @@ import { toPusherKey } from "@/utils/toPusherKey";
 export const DELETE = async (req, { params }) => {
   const { chatId } = params;
   try {
-    console.log("deleting");
+    console.log(`DELETE chat @ id: ${chatId}`);
     const chat = await prisma.chat.findUnique({
       where: {
         id: chatId,
@@ -31,8 +31,18 @@ export const DELETE = async (req, { params }) => {
       },
     });
 
-    console.log(chat.users);
-
+    console.log(
+      `Pusher @ ${toPusherKey(`user:${chat.users[0].user.id}:delete-chat`)}`
+    );
+    console.log(
+      `Pusher @ ${toPusherKey(`user:${chat.users[1].user.id}:delete-chat`)}`
+    );
+    console.log(
+      `Pusher @ ${toPusherKey(`user:${chat.users[0].user.id}:update-chat`)}`
+    );
+    console.log(
+      `Pusher @ ${toPusherKey(`user:${chat.users[1].user.id}:update-chat`)}`
+    );
     pusherServer.trigger(
       toPusherKey(`user:${chat.users[0].user.id}:delete-chat`),
       "delete-chat",
@@ -41,6 +51,16 @@ export const DELETE = async (req, { params }) => {
     pusherServer.trigger(
       toPusherKey(`user:${chat.users[1].user.id}:delete-chat`),
       "delete-chat",
+      { ...chat, deletedChat }
+    );
+    pusherServer.trigger(
+      toPusherKey(`user:${chat.users[0].user.id}:update-chat`),
+      "update-chat",
+      { ...chat, deletedChat }
+    );
+    pusherServer.trigger(
+      toPusherKey(`user:${chat.users[1].user.id}:update-chat`),
+      "update-chat",
       { ...chat, deletedChat }
     );
     return new Response(JSON.stringify(deletedChat), { status: 200 });
