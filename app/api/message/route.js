@@ -1,11 +1,13 @@
 import { pusherServer } from "@/lib/pusher";
 import { toPusherKey } from "@/utils/toPusherKey";
 import prisma from "@/prisma/client";
+import { OutputFetch } from "@/utils/Output";
 
 export const POST = async (req, res) => {
   try {
     const { userId, message, chatId } = await req.json();
-    console.log(`GET chat @ id: ${chatId}`);
+    // console.log(`GET chat @ id: ${chatId}`);
+    console.log(OutputFetch("GET", "chat", [`id: ${chatId}`], "/api/message"));
     const chatData = await prisma.chat.findUnique({
       where: {
         id: chatId,
@@ -14,7 +16,15 @@ export const POST = async (req, res) => {
         users: true,
       },
     });
-    console.log(`POST message @ author: ${userId}, chatId: ${chatId}`);
+    // console.log(`POST message @ author: ${userId}, chatId: ${chatId}`);
+    console.log(
+      OutputFetch(
+        "POST",
+        "message",
+        [[`author: ${userId}`, `chatId: ${chatId}`]],
+        "/api/message"
+      )
+    );
     const data = await prisma.message.create({
       include: {
         author: true,
@@ -31,7 +41,10 @@ export const POST = async (req, res) => {
         ? chatData.users[1]
         : chatData.users[0];
 
-    console.log(`PATCH chatUser @ id: ${otherUser.id}`);
+    // console.log(`PATCH chatUser @ id: ${otherUser.id}`);
+    console.log(
+      OutputFetch("PATCH", "chatUser", [`id: ${otherUser.id}`], "/api/message")
+    );
     const updatedChat = await prisma.chatUser.update({
       where: {
         id: otherUser.id,
@@ -43,16 +56,40 @@ export const POST = async (req, res) => {
       },
     });
 
+    // console.log(
+    //   `Pusher @ ${toPusherKey(
+    //     `user:${
+    //       chatData.users[0].userId === userId
+    //         ? chatData.users[1].userId
+    //         : chatData.users[0].userId
+    //     }:add_message_notification`
+    //   )}`
+    // );
     console.log(
-      `Pusher @ ${toPusherKey(
-        `user:${
-          chatData.users[0].userId === userId
-            ? chatData.users[1].userId
-            : chatData.users[0].userId
-        }:add_message_notification`
-      )}`
+      OutputFetch(
+        "Pusher",
+        "",
+        [
+          toPusherKey(
+            `user:${
+              chatData.users[0].userId === userId
+                ? chatData.users[1].userId
+                : chatData.users[0].userId
+            }:add_message_notification`
+          ),
+        ],
+        "/api/message"
+      )
     );
-    console.log(`Pusher @ ${toPusherKey(`chat:${chatId}:incoming_message`)}`);
+    // console.log(`Pusher @ ${toPusherKey(`chat:${chatId}:incoming_message`)}`);
+    console.log(
+      OutputFetch(
+        "Pusher",
+        "",
+        [toPusherKey(`chat:${chatId}:incoming_message`)],
+        "/api/message"
+      )
+    );
     pusherServer.trigger(
       toPusherKey(`chat:${chatId}:incoming_message`),
       "incoming_message",

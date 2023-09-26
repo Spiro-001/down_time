@@ -1,5 +1,6 @@
 import { pusherServer } from "@/lib/pusher";
 import prisma from "@/prisma/client";
+import { OutputFetch } from "@/utils/Output";
 import { parsePusher } from "@/utils/parsePusher";
 
 export const POST = async (req, res) => {
@@ -7,7 +8,8 @@ export const POST = async (req, res) => {
     const data = await parsePusher(req.body);
     const { id, username, email, membership } = data;
 
-    console.log(`GET user @ id: ${id}`);
+    // console.log(`GET user @ id: ${id}`);
+    console.log(OutputFetch("GET", "user", [`id: ${id}`], "/api/pusher/auth"));
     const userData = await prisma.user.findUnique({
       where: {
         id,
@@ -47,8 +49,16 @@ export const POST = async (req, res) => {
             membership,
           },
         };
+        // console.log(
+        //   `Pusher @ AUTH [SOCKET_ID: ${socketId}, CHANNEL: ${channel}]`
+        // );
         console.log(
-          `Pusher @ AUTH [SOCKET_ID: ${socketId}, CHANNEL: ${channel}]`
+          OutputFetch(
+            "Pusher",
+            "",
+            [`AUTH [SOCKET_ID: ${socketId}, CHANNEL: ${channel}]`],
+            "/api/pusher/auth"
+          )
         );
         const authResponse = pusherServer.authorizeChannel(
           socketId,

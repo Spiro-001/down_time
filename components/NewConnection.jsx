@@ -62,7 +62,6 @@ const NewConnection = ({ userInfo, chats, setSearching }) => {
       />
     </div>
   );
-  console.log(new Array(8));
 
   const filteredChats = chats.map(
     (chat) =>
@@ -108,51 +107,53 @@ const NewConnection = ({ userInfo, chats, setSearching }) => {
     const user = pool[randomNumber];
     // Make sure to verify user does not exceed limit before connecting
     // if exceeds redo search
-    const getUser = async () => {
-      const res = await fetch(`/api/user/${user.id}`);
-      const data = await res.json();
-      let restricted = chats.map((chat) =>
-        chat.chat.users.filter((user) => user !== userInfo.id)
-      );
-      restricted = [...new Set(...restricted).values()];
-      if (!restricted.includes(user.id)) {
-        switch (data.membership) {
-          case "basic":
-            if (data.chats.length > 3) {
-              break;
-            }
+    if (user) {
+      const getUser = async () => {
+        const res = await fetch(`/api/user/${user.id}`);
+        const data = await res.json();
+        let restricted = chats.map((chat) =>
+          chat.chat.users.filter((user) => user !== userInfo.id)
+        );
+        restricted = [...new Set(...restricted).values()];
+        if (!restricted.includes(user.id)) {
+          switch (data.membership) {
+            case "basic":
+              if (data.chats.length > 3) {
+                break;
+              }
 
-          case "premium":
-            if (data.chats.length > 10) {
-              break;
-            }
-          default:
-            console.log("CREATING CHAT");
-            const matchRes = await fetch("/api/match", {
-              method: "POST",
-              body: JSON.stringify({
-                users: [data, userInfo],
-              }),
-            });
-            const createChat = setTimeout(async () => {
-              const res = await fetch("/api/chat", {
+            case "premium":
+              if (data.chats.length > 10) {
+                break;
+              }
+            default:
+              console.log("CREATING CHAT");
+              const matchRes = await fetch("/api/match", {
                 method: "POST",
                 body: JSON.stringify({
                   users: [data, userInfo],
                 }),
               });
-              const chat = await res.json();
-              // setChats((prev) => [...prev, chat]);
-              setPool((prev) => prev.filter((user) => user.id !== data.id));
-              return () => {
-                clearTimeout(createChat);
-              };
-            }, 1000);
-            break;
+              const createChat = setTimeout(async () => {
+                const res = await fetch("/api/chat", {
+                  method: "POST",
+                  body: JSON.stringify({
+                    users: [data, userInfo],
+                  }),
+                });
+                const chat = await res.json();
+                // setChats((prev) => [...prev, chat]);
+                setPool((prev) => prev.filter((user) => user.id !== data.id));
+                return () => {
+                  clearTimeout(createChat);
+                };
+              }, 1000);
+              break;
+          }
         }
-      }
-    };
-    if (user) getUser();
+      };
+      getUser();
+    }
   };
 
   useEffect(() => {

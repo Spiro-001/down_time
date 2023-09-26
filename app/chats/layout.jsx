@@ -1,14 +1,13 @@
 import MyChats from "@/components/MyChats";
 import Nav from "@/components/Nav";
-import UserProvider from "@/components/UserProvider";
+import { getUserData } from "@/utils/getUserData";
 import React from "react";
 
-const layout = ({ children }) => {
+const layout = async ({ children }) => {
+  const data = await getUserData();
   return (
     <div className="flex w-full h-screen">
-      <UserProvider>
-        <MyChats />
-      </UserProvider>
+      <MyChats data={data} />
       <div className="flex flex-col flex-1">
         <Nav />
         {children}

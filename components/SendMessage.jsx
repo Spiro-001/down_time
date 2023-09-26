@@ -73,7 +73,7 @@ const SendMessage = ({ chatId, setChatRoom, myId, typingId }) => {
   };
 
   const handleInput = (e) => {
-    if (e.target.value.length > 0) {
+    if (e.target.value.length === 1) {
       fetch(`/api/typing/${chatId}`, {
         method: "POST",
         body: JSON.stringify({
@@ -81,7 +81,7 @@ const SendMessage = ({ chatId, setChatRoom, myId, typingId }) => {
           typing: true,
         }),
       });
-    } else {
+    } else if (e.target.value.length <= 0) {
       fetch(`/api/typing/${chatId}`, {
         method: "POST",
         body: JSON.stringify({

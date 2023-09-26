@@ -1,12 +1,28 @@
 import { pusherServer } from "@/lib/pusher";
+import { OutputFetch } from "@/utils/Output";
 import { toPusherKey } from "@/utils/toPusherKey";
 
 export const POST = async (req, res) => {
   try {
     const { users } = await req.json();
-
-    console.log(`Pusher @ ${toPusherKey(`user:${users[0].id}:match_request`)}`);
-    console.log(`Pusher @ ${toPusherKey(`user:${users[1].id}:match_request`)}`);
+    console.log(
+      OutputFetch(
+        "Pusher",
+        "",
+        [toPusherKey(`user:${users[0].id}:match_request`)],
+        "/api/match"
+      )
+    );
+    console.log(
+      OutputFetch(
+        "Pusher",
+        "",
+        [toPusherKey(`user:${users[1].id}:match_request`)],
+        "/api/match"
+      )
+    );
+    // console.log(`Pusher @ ${toPusherKey(`user:${users[0].id}:match_request`)}`);
+    // console.log(`Pusher @ ${toPusherKey(`user:${users[1].id}:match_request`)}`);
     pusherServer.trigger(
       toPusherKey(`user:${users[0].id}:match_request`),
       "match_request",
