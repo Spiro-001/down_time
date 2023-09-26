@@ -3,7 +3,8 @@
 import { gsap } from "gsap";
 import React, { useEffect, useRef, useState } from "react";
 
-const SendMessage = ({ chatId, setChatRoom, myId, typingId }) => {
+const SendMessage = ({ chatId, myId, active }) => {
+  console.log(active);
   const inputRef = useRef(null);
   const formRef = useRef(null);
 
@@ -27,6 +28,7 @@ const SendMessage = ({ chatId, setChatRoom, myId, typingId }) => {
               userId: myId,
               message,
               chatId,
+              active,
             }),
           });
           await fetch(`/api/typing/${chatId}`, {
@@ -45,7 +47,7 @@ const SendMessage = ({ chatId, setChatRoom, myId, typingId }) => {
       document.removeEventListener("input", resizeInput);
       document.removeEventListener("keydown", onEnterKey);
     };
-  }, [myId]);
+  }, [myId, active]);
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -54,13 +56,13 @@ const SendMessage = ({ chatId, setChatRoom, myId, typingId }) => {
     inputRef.current.value = "";
     inputRef.current.style.height = "0px";
     inputRef.current.style.height = inputRef.current.scrollHeight + "px";
-
     const response = await fetch("/api/message", {
       method: "POST",
       body: JSON.stringify({
         userId: myId,
         message,
         chatId,
+        active,
       }),
     });
     await fetch(`/api/typing/${chatId}`, {

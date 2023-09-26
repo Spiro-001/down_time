@@ -15,6 +15,17 @@ const pusherClientChannel = (userInfo) => {
   });
 };
 
+export const pusherChatChannel = (userInfo) => {
+  const { id, chatId } = userInfo;
+  return new PusherClient(process.env.NEXT_PUBLIC_PUSHER_APP_KEY, {
+    cluster: "us2",
+    channelAuthorization: {
+      params: { id, chatId },
+      endpoint: "/api/pusher/chat/auth",
+    },
+  });
+};
+
 export const presenceChannelBinder = (userInfo, fns) => {
   pusherClient = pusherClientChannel(userInfo);
   presenceChannel = pusherClient.subscribe(

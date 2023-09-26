@@ -107,10 +107,6 @@ const NewConnection = ({ userInfo, chats, setSearching }) => {
     if (user) {
       const getUser = async () => {
         console.log("SEARCHING FOR USER");
-        console.log(user);
-        // const res = await fetch(`/api/user/${user.id}`);
-        // const data = await res.json();
-        // console.log(data);
         let restricted = chats.map((chat) =>
           chat.chat.users.filter((user) => user !== userInfo.id)
         );

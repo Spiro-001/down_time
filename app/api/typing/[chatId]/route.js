@@ -12,7 +12,7 @@ export const POST = async (req, { params }) => {
         "Pusher",
         "",
         [toPusherKey(`user:${chatId}:typing_message`)],
-        "/api/typiing/[chatId]"
+        "/api/typing/[chatId]"
       )
     );
     pusherServer.trigger(

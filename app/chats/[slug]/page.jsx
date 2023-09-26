@@ -6,37 +6,13 @@ import Scrollbar from "@/components/Scrollbar";
 import SendMessage from "@/components/SendMessage";
 import { loginIsRequiredClient } from "@/lib/auth";
 import { pusherClient } from "@/lib/pusher";
+import { pusherChatChannel } from "@/utils/ConnectionPusher/utils";
 import { toPusherKey } from "@/utils/toPusherKey";
 import { Power2, gsap } from "gsap";
 import { ScrollToPlugin, ScrollTrigger } from "gsap/all";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-
-// data = {
-//   id: 1,
-//   messages: [
-//     {
-//       author: {
-//         id: 1,
-//         email: "test@test.com",
-//         username: "test",
-//       },
-//       chatId: 1,
-//       message: "test",
-//       userId: 1,
-//     },
-//   ],
-//   users: [
-//     {
-//       user: {
-//         id: 1,
-//         email: "test@test.com",
-//         username: "test",
-//       },
-//     },
-//   ],
-// };
 
 const ChatRoom = ({ params }) => {
   loginIsRequiredClient();
@@ -62,6 +38,8 @@ const ChatRoom = ({ params }) => {
     dne: false,
   });
 
+  const [active, setActive] = useState([]);
+
   if (chatRoom.dne) router.push("/chats?error=dne");
 
   useEffect(() => {
@@ -82,22 +60,15 @@ const ChatRoom = ({ params }) => {
         }
       };
       const clearNotification = async () => {
-        if (chatRoom.messages.length > 0) {
-          const res = await fetch("/api/chat/notification", {
-            method: "PATCH",
-            body: JSON.stringify({
-              user: myId,
-              chatId: params.slug,
-            }),
-          });
-          const data = await res.json();
-        }
+        const res = await fetch("/api/chat/notification", {
+          method: "PATCH",
+          body: JSON.stringify({
+            user: myId,
+            chatId: params.slug,
+          }),
+        });
+        const data = await res.json();
       };
-      pusherClient.subscribe(
-        toPusherKey(`chat:${params.slug}:incoming_message`)
-      );
-      pusherClient.subscribe(toPusherKey(`user:${params.slug}:typing_message`));
-      pusherClient.subscribe(toPusherKey(`chat:${params.slug}:update_chat`));
       const messageRequestHandler = (data) => {
         setChatRoom((prev) => ({
           ...prev,
@@ -132,12 +103,47 @@ const ChatRoom = ({ params }) => {
       const updateChatRequestHandler = (data) => {
         setChatRoom((prev) => ({ ...prev, name: data.name }));
       };
+      const initialRequestHandler = (data) => {
+        console.log("JOINING CHAT ROOM");
+        const users = new Set(
+          Object.values(data.members).map((user) => user.id)
+        );
+        setActive([...users.values()]);
+      };
+      const errorRequestHandler = (data) => {
+        console.log("ERROR JOINING CHAT ROOM");
+      };
+      const addOnlineRequestHandler = (data) => {
+        console.log("USER JOINED CHAT");
+        setActive((prev) => [...prev, data.info.id]);
+      };
+      const removeOnlineRequestHandler = (data) => {
+        console.log("USER LEFT CHAT");
+        setActive((prev) => prev.filter((user) => user !== data.info.id));
+      };
+      const presenceChatChannel = pusherChatChannel({
+        id: myId,
+        chatId: params.slug,
+      });
+      const chatChannel = presenceChatChannel.subscribe(
+        toPusherKey(`presence-chat:${params.slug}`)
+      );
+      pusherClient.subscribe(
+        toPusherKey(`chat:${params.slug}:incoming_message`)
+      );
+      pusherClient.subscribe(toPusherKey(`user:${params.slug}:typing_message`));
+      pusherClient.subscribe(toPusherKey(`chat:${params.slug}:update_chat`));
       pusherClient.bind("incoming_message", messageRequestHandler);
       pusherClient.bind("typing_message", typingRequestHandler);
       pusherClient.bind("update_chat", updateChatRequestHandler);
+      chatChannel.bind("pusher:subscription_succeeded", initialRequestHandler);
+      chatChannel.bind("pusher:subscription_error", errorRequestHandler);
+      chatChannel.bind("pusher:member_added", addOnlineRequestHandler);
+      chatChannel.bind("pusher:member_removed", removeOnlineRequestHandler);
       getMessages();
       clearNotification();
       return () => {
+        pusherClient.unsubscribe(toPusherKey(`presence-chat:${params.slug}`));
         pusherClient.unsubscribe(
           toPusherKey(`chat:${params.slug}:incoming_message`)
         );
@@ -150,6 +156,8 @@ const ChatRoom = ({ params }) => {
         pusherClient.unbind("incoming_message", messageRequestHandler);
         pusherClient.unbind("typing_message", typingRequestHandler);
         pusherClient.unbind("update_chat", updateChatRequestHandler);
+        chatChannel.unbind("member_added", addOnlineRequestHandler);
+        chatChannel.unbind("member_removed", removeOnlineRequestHandler);
       };
     }
   }, [myId]);
@@ -316,12 +324,7 @@ const ChatRoom = ({ params }) => {
           </div>
           <div className="min-w-full relative" style={{ height: 42 }}>
             <div className="ml-auto mt-auto max-w-[600px] absolute bottom-0 right-0 w-full">
-              <SendMessage
-                chatId={params.slug}
-                setChatRoom={setChatRoom}
-                myId={myId}
-                typingId={extra.isTyping.userId}
-              />
+              <SendMessage chatId={params.slug} myId={myId} active={active} />
             </div>
           </div>
         </div>
