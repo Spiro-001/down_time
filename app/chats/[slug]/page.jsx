@@ -66,18 +66,6 @@ const ChatRoom = ({ params }) => {
 
   useEffect(() => {
     if (myId) {
-      const clearNotification = async () => {
-        const res = await fetch("/api/chat/notification", {
-          method: "PATCH",
-          body: JSON.stringify({
-            user: myId,
-            chatId: params.slug,
-          }),
-        });
-        const data = await res.json();
-        console.log(data);
-      };
-
       const getMessages = async () => {
         const res = await fetch(`/api/messages/${params.slug}`);
         const data = await res.json();
@@ -91,6 +79,18 @@ const ChatRoom = ({ params }) => {
           });
         } else {
           setChatRoom(data);
+        }
+      };
+      const clearNotification = async () => {
+        if (chatRoom.messages.length > 0) {
+          const res = await fetch("/api/chat/notification", {
+            method: "PATCH",
+            body: JSON.stringify({
+              user: myId,
+              chatId: params.slug,
+            }),
+          });
+          const data = await res.json();
         }
       };
       pusherClient.subscribe(

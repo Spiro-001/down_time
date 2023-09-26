@@ -30,7 +30,7 @@ const MyChats = ({ data }) => {
   });
 
   useEffect(() => {
-    console.log("RELOADING INIT MYCHAT", userInfo);
+    console.log("RELOADING INIT MYCHAT");
     const handleClick = (e) => {
       if (contextMenuRef !== e.target) {
         setContextMenu((prev) => ({ ...prev, open: false }));
@@ -38,13 +38,11 @@ const MyChats = ({ data }) => {
     };
     const updateRequestHandler = (data) => {
       console.log("ADD CHAT");
-      console.log(chats, data);
       setChats((prev) => [...prev, { chat: data }]);
       router.push(`/chats/${data.id}`);
     };
     const updateChatRequestHandler = (data) => {
       console.log("DELETE CHAT");
-      console.log(userInfo);
       setChats((prev) =>
         prev.filter((chat) => chat.chat.id !== data.deletedChat.id)
       );
@@ -78,9 +76,9 @@ const MyChats = ({ data }) => {
     };
 
     const clearMessageNotificationHandler = (data) => {
+      console.log("CLEAR NOTIFICATION");
       setChats((prev) => {
         prev.map((chat) => {
-          console.log(chat);
           if (chat.chatId === data.chatId) chat.notifications = 0;
         });
         return prev;

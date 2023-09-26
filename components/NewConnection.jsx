@@ -91,10 +91,7 @@ const NewConnection = ({ userInfo, chats, setSearching }) => {
 
     removeMember: function removeMember(member) {
       // Remove member
-      setPool((prev) => {
-        console.log(prev, member);
-        return prev.filter((user) => user.id !== member.info.id);
-      });
+      setPool((prev) => prev.filter((user) => user.id !== member.info.id));
       setTotalOnline((prev) => prev - 1);
     },
 
@@ -109,21 +106,24 @@ const NewConnection = ({ userInfo, chats, setSearching }) => {
     // if exceeds redo search
     if (user) {
       const getUser = async () => {
-        const res = await fetch(`/api/user/${user.id}`);
-        const data = await res.json();
+        console.log("SEARCHING FOR USER");
+        console.log(user);
+        // const res = await fetch(`/api/user/${user.id}`);
+        // const data = await res.json();
+        // console.log(data);
         let restricted = chats.map((chat) =>
           chat.chat.users.filter((user) => user !== userInfo.id)
         );
         restricted = [...new Set(...restricted).values()];
         if (!restricted.includes(user.id)) {
-          switch (data.membership) {
+          switch (user.membership) {
             case "basic":
-              if (data.chats.length > 3) {
+              if (user.chats.length > 3) {
                 break;
               }
 
             case "premium":
-              if (data.chats.length > 10) {
+              if (user.chats.length > 10) {
                 break;
               }
             default:
@@ -131,19 +131,19 @@ const NewConnection = ({ userInfo, chats, setSearching }) => {
               const matchRes = await fetch("/api/match", {
                 method: "POST",
                 body: JSON.stringify({
-                  users: [data, userInfo],
+                  users: [user, userInfo],
                 }),
               });
               const createChat = setTimeout(async () => {
                 const res = await fetch("/api/chat", {
                   method: "POST",
                   body: JSON.stringify({
-                    users: [data, userInfo],
+                    users: [user, userInfo],
                   }),
                 });
                 const chat = await res.json();
                 // setChats((prev) => [...prev, chat]);
-                setPool((prev) => prev.filter((user) => user.id !== data.id));
+                setPool((prev) => prev.filter((user) => user.id !== user.id));
                 return () => {
                   clearTimeout(createChat);
                 };
@@ -168,7 +168,6 @@ const NewConnection = ({ userInfo, chats, setSearching }) => {
       document.getElementById("search-connection").close();
       console.log(`USER ${null} REMOVED FROM ACTIVE SEARCH`);
       setPool((prev) => prev.filter((user) => !data.users.includes(user.id)));
-      setSearch(false);
     };
     const matchRequestHandler = (data) => {
       setHeading("We found a match!");

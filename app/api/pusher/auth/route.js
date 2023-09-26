@@ -47,6 +47,7 @@ export const POST = async (req, res) => {
             username,
             email,
             membership,
+            chats: userData.chats,
           },
         };
         // console.log(
