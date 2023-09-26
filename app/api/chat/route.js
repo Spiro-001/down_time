@@ -4,6 +4,7 @@ import { toPusherKey } from "@/utils/toPusherKey";
 
 export const PATCH = async (req, res) => {
   const { id, name } = await req.json();
+
   try {
     const updatedChat = await prisma.chat.update({
       where: {
@@ -12,10 +13,23 @@ export const PATCH = async (req, res) => {
       data: {
         name,
       },
+      include: {
+        users: true,
+      },
     });
     pusherServer.trigger(
-      toPusherKey(`user:${id}:update_chat`),
-      "typing_message",
+      toPusherKey(`chat:${id}:update_chat`),
+      "update_chat",
+      updatedChat
+    );
+    pusherServer.trigger(
+      toPusherKey(`user:${users[0].userId}:update_chat`),
+      "update_chat",
+      updatedChat
+    );
+    pusherServer.trigger(
+      toPusherKey(`user:${users[0].userId}:update_chat`),
+      "update_chat",
       updatedChat
     );
     return new Response(JSON.stringify(updatedChat), { status: 200 });

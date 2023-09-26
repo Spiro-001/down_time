@@ -29,11 +29,12 @@ model Chat {
 }
 
 model ChatUser {
-  id     String @id @default(uuid())
-  users  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  chat   Chat   @relation(fields: [chatId], references: [id], onDelete: Cascade)
-  userId String
-  chatId String
+  id            String @id @default(uuid())
+  users         User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chat          Chat   @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  userId        String
+  chatId        String
+  notifications Int    @default(0)
 }
 
 model Message {

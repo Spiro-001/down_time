@@ -3,16 +3,11 @@ import prisma from "@/prisma/client";
 export const GET = async (req, { params }) => {
   const { chatId } = params;
   try {
-    const data = await prisma.chat.findFirst({
+    const data = await prisma.chat.findUnique({
       where: {
         id: chatId,
       },
       include: {
-        users: {
-          include: {
-            user: true,
-          },
-        },
         messages: {
           include: {
             author: true,
@@ -22,6 +17,7 @@ export const GET = async (req, { params }) => {
     });
     return new Response(JSON.stringify(data), { status: 200 });
   } catch (error) {
+    console.log(error);
     return new Response("error", { status: 500 });
   }
 };

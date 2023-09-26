@@ -1,14 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
 import Finding from "./Finding";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { pusherClient } from "@/lib/pusher";
 import { toPusherKey } from "@/utils/toPusherKey";
 
 const MyChats = ({ data }) => {
   const router = useRouter();
+  const pathName = usePathname();
   const contextMenuRef = useRef(null);
   const [userInfo, setUserInfo] = useState({
     id: data.id,
@@ -17,6 +18,7 @@ const MyChats = ({ data }) => {
     email: data.email,
   });
   const [chats, setChats] = useState(data.chats);
+  const [updated, setUpdate] = useState(false);
   const [contextMenu, setContextMenu] = useState({
     open: false,
     type: null,
@@ -34,14 +36,6 @@ const MyChats = ({ data }) => {
         setContextMenu((prev) => ({ ...prev, open: false }));
       }
     };
-    const deleteRequestHandler = (data) => {
-      console.log("DELETE CHAT");
-      console.log(userInfo);
-      setChats((prev) =>
-        prev.filter((chat) => chat.chat.id !== data.deletedChat.id)
-      );
-      router.push("/chats");
-    };
     const updateRequestHandler = (data) => {
       console.log("ADD CHAT");
       console.log(chats, data);
@@ -56,25 +50,90 @@ const MyChats = ({ data }) => {
       );
       router.push("/chats");
     };
-    // pusherClient.subscribe(toPusherKey(`user:${userInfo.id}:delete-chat`));
+
+    const updateChatNameRequestHandler = (data) => {
+      console.log("PATCH CHAT NAME");
+      setChats((prev) => {
+        prev.map((chat) => {
+          if (chat.chat.id === data.id) chat.chat.name = data.name;
+          return chat;
+        });
+        return prev;
+      });
+      setUpdate(true);
+    };
+
+    const messageNotificationHandler = (data) => {
+      console.log("NEW MESSAGE");
+      if (pathName === "/chats") {
+        setChats((prev) => {
+          prev.map((chat) => {
+            if (chat.chatId === data.chatId)
+              chat.notifications = (chat.notifications ?? 0) + 1;
+          });
+          return prev;
+        });
+        setUpdate(true);
+      }
+    };
+
+    const clearMessageNotificationHandler = (data) => {
+      setChats((prev) => {
+        prev.map((chat) => {
+          console.log(chat);
+          if (chat.chatId === data.chatId) chat.notifications = 0;
+        });
+        return prev;
+      });
+      setUpdate(true);
+    };
+
+    setUpdate(false);
     pusherClient.subscribe(toPusherKey(`user:${userInfo.id}:add-chat`));
     pusherClient.subscribe(toPusherKey(`user:${userInfo.id}:update-chat`));
-    // pusherClient.bind("delete-chat", deleteRequestHandler);
+    pusherClient.subscribe(toPusherKey(`user:${userInfo.id}:update_chat`));
+    pusherClient.subscribe(
+      toPusherKey(`user:${userInfo.id}:add_message_notification`)
+    );
+    pusherClient.subscribe(
+      toPusherKey(`user:${userInfo.id}:clear_message_notification`)
+    );
     pusherClient.bind("add-chat", updateRequestHandler);
     pusherClient.bind("update-chat", updateChatRequestHandler);
-
+    pusherClient.bind("update_chat", updateChatNameRequestHandler);
+    pusherClient.bind("add_message_notification", messageNotificationHandler);
+    pusherClient.bind(
+      "clear_message_notification",
+      clearMessageNotificationHandler
+    );
     document.addEventListener("click", handleClick);
     // getChats();
     return () => {
       console.log("RELOADING MYCHATS");
       document.removeEventListener("click", handleClick);
-      pusherClient.unsubscribe(toPusherKey(`user:${userInfo.id}:delete-chat`));
       pusherClient.unsubscribe(toPusherKey(`user:${userInfo.id}:add-chat`));
-      // pusherClient.unbind("delete-chat", deleteRequestHandler);
+      pusherClient.unsubscribe(toPusherKey(`user:${userInfo.id}:update-chat`));
+      pusherClient.unsubscribe(toPusherKey(`user:${userInfo.id}:update_chat`));
+      pusherClient.unsubscribe(
+        toPusherKey(`user:${userInfo.id}:add_message_notification`)
+      );
+      pusherClient.unsubscribe(
+        toPusherKey(`user:${userInfo.id}:clear_message_notification`)
+      );
       pusherClient.unbind("add-chat", updateRequestHandler);
       pusherClient.unbind("update-chat", updateChatRequestHandler);
+      pusherClient.unbind("update_chat", updateChatNameRequestHandler);
+      pusherClient.unbind(
+        "add_message_notification",
+        messageNotificationHandler
+      );
+      pusherClient.unbind(
+        "clear_message_notification",
+        clearMessageNotificationHandler
+      );
     };
-  }, [chats]);
+  }, [chats, updated]);
+
   const openContextMenu = (e, chatId) => {
     e.preventDefault();
     setContextMenu((prev) => ({ ...prev, open: true, chatId }));
@@ -119,7 +178,6 @@ const MyChats = ({ data }) => {
     const res = await fetch(`/api/chat/${contextMenu.chatId}`, {
       method: "DELETE",
     });
-    console.log(res);
     setChats((prev) =>
       prev.filter((chat) => chat.chat.id !== contextMenu.chatId)
     );
@@ -142,11 +200,16 @@ const MyChats = ({ data }) => {
               ? moveOutside
               : undefined
           }
-          className="w-full flex bg-white px-4 py-2"
+          className="w-full flex bg-white px-4 py-2 rounded-md items-center"
           onContextMenu={(e) => openContextMenu(e, chat.chat.id)}
           onKeyDown={handleSubmit}
         >
           {chat.chat.name}
+          {chat.notifications !== 0 && (
+            <span className="ml-auto bg-red-200 px-2 text-sm h-full flex items-center font-bold rounded-md">
+              {chat.notifications > 99 ? "99+" : chat.notifications}
+            </span>
+          )}
         </Link>
       ))}
       {contextMenu.open && (

@@ -6,8 +6,9 @@ import {
   presenceChannelUnBinder,
 } from "@/utils/ConnectionPusher/utils";
 import { toPusherKey } from "@/utils/toPusherKey";
-import { Elastic, Power0 } from "gsap";
-import { Bounce, gsap } from "gsap";
+import { Power0 } from "gsap";
+import { gsap } from "gsap";
+import Image from "next/image";
 import React, { useEffect, useState } from "react";
 
 const NewConnection = ({ userInfo, chats, setSearching }) => {
@@ -146,7 +147,7 @@ const NewConnection = ({ userInfo, chats, setSearching }) => {
               return () => {
                 clearTimeout(createChat);
               };
-            }, 2000);
+            }, 1000);
             break;
         }
       }
@@ -170,7 +171,19 @@ const NewConnection = ({ userInfo, chats, setSearching }) => {
     };
     const matchRequestHandler = (data) => {
       setHeading("We found a match!");
-      setBody(userInfo.id !== data[0].id ? data[1].username : data[0].username);
+      setBody(
+        <div
+          key="match-found"
+          className="flex flex-col justify-center items-center gap-y-4"
+        >
+          <span>
+            <Image src="/user.png" height={50} width={50} />
+          </span>
+          <span className="bg-blue-100 font-bold py-2 px-8 rounded-md">
+            {userInfo.id !== data[0].id ? data[1].username : data[0].username}
+          </span>
+        </div>
+      );
     };
     pusherClient.subscribe(toPusherKey(`user:${userInfo.id}:delete-chat`));
     pusherClient.subscribe(toPusherKey(`user:${userInfo.id}:add-chat`));
@@ -238,7 +251,6 @@ const NewConnection = ({ userInfo, chats, setSearching }) => {
           width: circleHeight,
           duration: 0.5,
           ease: Power0.easeNone,
-          // ease: Elastic.easeOut.config(0.1, 2, 0.5, 2),
           repeat: -1,
         }
       );
@@ -250,12 +262,12 @@ const NewConnection = ({ userInfo, chats, setSearching }) => {
         setHeading("Searching most");
         finalStage = setTimeout(() => {
           setHeading(
-            "Sorry, we couldn't find a match for you. Try again in a few minutes"
+            "Sorry, we couldn't find a match for you. Try again in a few minutes."
           );
           setBody("");
           close = setTimeout(() => {
-            // document.getElementById("search-connection").close();
-            // setSearching(false);
+            document.getElementById("search-connection").close();
+            setSearching(false);
           }, 2000);
         }, 5000);
       }, 5000);
@@ -270,11 +282,26 @@ const NewConnection = ({ userInfo, chats, setSearching }) => {
     };
   }, [search]);
 
+  const handleCloseSearch = (e) => {
+    setSearching(false);
+    document.getElementById("search-connection").close();
+  };
+
   return (
-    <div className="flex flex-col justify-center items-center gap-y-8">
-      <span>{heading}</span>
-      {body}
-    </div>
+    <>
+      <div className="flex flex-col justify-center items-center gap-y-4 px-8">
+        <span className="pb-4">{heading}</span>
+        {body}
+      </div>
+      {body && (
+        <button
+          className="bg-black rounded-md p-1 mt-auto ml-auto text-white px-4 text-base font-bold"
+          onClick={handleCloseSearch}
+        >
+          Cancel
+        </button>
+      )}
+    </>
   );
 };
 

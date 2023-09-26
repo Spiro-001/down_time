@@ -65,75 +65,93 @@ const ChatRoom = ({ params }) => {
   if (chatRoom.dne) router.push("/chats?error=dne");
 
   useEffect(() => {
-    const getMessages = async () => {
-      const res = await fetch(`/api/messages/${params.slug}`);
-      const data = await res.json();
-      if (!data) {
-        setChatRoom({
-          id: params.slug,
-          users: [],
-          messages: [],
-          name: "Loading...",
-          dne: true,
+    if (myId) {
+      const clearNotification = async () => {
+        const res = await fetch("/api/chat/notification", {
+          method: "PATCH",
+          body: JSON.stringify({
+            user: myId,
+            chatId: params.slug,
+          }),
         });
-      } else {
-        setChatRoom(data);
-      }
-    };
-    pusherClient.subscribe(toPusherKey(`user:${params.slug}:incoming_message`));
-    pusherClient.subscribe(toPusherKey(`user:${params.slug}:typing_message`));
-    pusherClient.subscribe(toPusherKey(`user:${params.slug}:update_chat`));
-    const messageRequestHandler = (data) => {
-      setChatRoom((prev) => ({
-        ...prev,
-        messages: [...prev.messages, data],
-      }));
-    };
-    const typingRequestHandler = async (data) => {
-      gsap.registerPlugin(ScrollToPlugin);
-      const chatContainer = document.getElementById("chat-container");
-      if (data.typing) {
-        gsap.to("#chat-container", {
-          scrollTo: { x: 0, y: chatContainer.scrollHeight },
-          duration: 0.2,
-          ease: Power2.easeOut,
-        });
-      } else {
-        await gsap.fromTo(
-          document.getElementById("typing-block"),
-          {
-            x: 0,
-            opacity: 1,
-            duration: 0.5,
-          },
-          {
-            opacity: 0,
-            x: myId === data.userId ? -50 : 50,
-          }
-        );
-      }
-      setExtra((prev) => ({ ...prev, isTyping: data }));
-    };
-    const updateChatRequestHandler = (data) => {
-      setChatRoom((prev) => ({ ...prev, name: data.name }));
-    };
-    pusherClient.bind("incoming_message", messageRequestHandler);
-    pusherClient.bind("typing_message", typingRequestHandler);
-    pusherClient.bind("update_chat", updateChatRequestHandler);
-    getMessages();
+        const data = await res.json();
+        console.log(data);
+      };
 
-    return () => {
-      pusherClient.unsubscribe(
+      const getMessages = async () => {
+        const res = await fetch(`/api/messages/${params.slug}`);
+        const data = await res.json();
+        if (!data) {
+          setChatRoom({
+            id: params.slug,
+            users: [],
+            messages: [],
+            name: "Loading...",
+            dne: true,
+          });
+        } else {
+          setChatRoom(data);
+        }
+      };
+      pusherClient.subscribe(
         toPusherKey(`user:${params.slug}:incoming_message`)
       );
-      pusherClient.unsubscribe(
-        toPusherKey(`user:${params.slug}:typing_message`)
-      );
-      pusherClient.unsubscribe(toPusherKey(`user:${params.slug}:update_chat`));
-      pusherClient.unbind("incoming_message", messageRequestHandler);
-      pusherClient.unbind("typing_message", messageRequestHandler);
-      pusherClient.unbind("typing_message", updateChatRequestHandler);
-    };
+      pusherClient.subscribe(toPusherKey(`user:${params.slug}:typing_message`));
+      pusherClient.subscribe(toPusherKey(`chat:${params.slug}:update_chat`));
+      const messageRequestHandler = (data) => {
+        setChatRoom((prev) => ({
+          ...prev,
+          messages: [...prev.messages, data],
+        }));
+      };
+      const typingRequestHandler = async (data) => {
+        gsap.registerPlugin(ScrollToPlugin);
+        const chatContainer = document.getElementById("chat-container");
+        if (data.typing) {
+          gsap.to("#chat-container", {
+            scrollTo: { x: 0, y: chatContainer.scrollHeight },
+            duration: 0.2,
+            ease: Power2.easeOut,
+          });
+        } else {
+          await gsap.fromTo(
+            document.getElementById("typing-block"),
+            {
+              x: 0,
+              opacity: 1,
+              duration: 0.5,
+            },
+            {
+              opacity: 0,
+              x: myId === data.userId ? -50 : 50,
+            }
+          );
+        }
+        setExtra((prev) => ({ ...prev, isTyping: data }));
+      };
+      const updateChatRequestHandler = (data) => {
+        setChatRoom((prev) => ({ ...prev, name: data.name }));
+      };
+      pusherClient.bind("incoming_message", messageRequestHandler);
+      pusherClient.bind("typing_message", typingRequestHandler);
+      pusherClient.bind("update_chat", updateChatRequestHandler);
+      getMessages();
+      clearNotification();
+      return () => {
+        pusherClient.unsubscribe(
+          toPusherKey(`user:${params.slug}:incoming_message`)
+        );
+        pusherClient.unsubscribe(
+          toPusherKey(`user:${params.slug}:typing_message`)
+        );
+        pusherClient.unsubscribe(
+          toPusherKey(`chat:${params.slug}:update_chat`)
+        );
+        pusherClient.unbind("incoming_message", messageRequestHandler);
+        pusherClient.unbind("typing_message", typingRequestHandler);
+        pusherClient.unbind("update_chat", updateChatRequestHandler);
+      };
+    }
   }, [myId]);
 
   useEffect(() => {
@@ -188,11 +206,7 @@ const ChatRoom = ({ params }) => {
     <div className="flex h-screen flex-1 px-8 py-4">
       <div className="flex-1 flex flex-col px-2 py-4">
         <span className="text-4xl font-bold pb-4 px-4 border-b border-black">
-          {chatRoom.name ??
-            chatRoom.users
-              .map((user) => user.user.username)
-              .join(" & ")
-              .concat("'s Room")}
+          {chatRoom.name}
         </span>
         <div className="h-full px-3 py-4 flex mx-4 my-4 flex-col gap-y-4 relative bg-slate-200 rounded-md">
           <div className="flex">

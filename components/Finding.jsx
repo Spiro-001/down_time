@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import NewConnection from "./NewConnection";
 import { pusherClient } from "@/lib/pusher";
 import { toPusherKey } from "@/utils/toPusherKey";
-import Image from "next/image";
 
 const Finding = ({ userInfo, chats }) => {
   const [searching, setSearching] = useState(false);
@@ -25,33 +24,28 @@ const Finding = ({ userInfo, chats }) => {
     };
   }, []);
 
-  const handleCloseSearch = (e) => {
-    e.stopPropagation();
-    setSearching(false);
-    document.getElementById("search-connection").close();
-  };
-
   return (
-    <div onClick={handleClick}>
-      Click to find
+    <div>
+      <button
+        className="bg-white rounded-md px-4 py-2 font-bold"
+        onClick={handleClick}
+      >
+        New Conversation
+      </button>
       <dialog
         id="search-connection"
-        className="w-full h-full flex justify-center bg-transparent items-center outline-none"
+        className="w-full h-full justify-center bg-transparent items-center outline-none"
       >
         {searching && (
-          <div className="flex w-full h-full max-w-[500px] max-h-[200px] bg-white px-4 pt-8 pb-2 rounded-md shadow-md">
-            <div className="relative overflow-visible w-full h-full flex flex-col gap-y-4 justify-between">
-              <NewConnection
-                userInfo={userInfo}
-                chats={chats}
-                setSearching={setSearching}
-              />
-              <button
-                className="bg-white rounded-full p-1 ml-auto"
-                onClick={handleCloseSearch}
-              >
-                Cancel
-              </button>
+          <div className="w-full h-full flex justify-center bg-transparent items-center">
+            <div className="mx-auto flex w-full h-fit max-w-[500px] min-h-[200px] bg-white px-4 pt-8 pb-2 rounded-md shadow-md">
+              <div className="relative overflow-visible w-full h-full flex flex-col gap-y-4 justify-between">
+                <NewConnection
+                  userInfo={userInfo}
+                  chats={chats}
+                  setSearching={setSearching}
+                />
+              </div>
             </div>
           </div>
         )}

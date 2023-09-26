@@ -27,7 +27,7 @@ const TotalConnection = ({ chats, id }) => {
   }, []);
 
   return (
-    <div className="bg-white w-full max-w-[300px] p-4 flex flex-col gap-y-4 rounded-md shadow-sm">
+    <div className="bg-white w-full max-w-[300px] justify-between p-4 flex flex-col gap-y-4 rounded-md shadow-sm">
       <span className="bg-red-100 w-fit rounded-md px-4 py-1 text-lg font-semibold">
         Total Friends
       </span>
