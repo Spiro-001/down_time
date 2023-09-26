@@ -111,7 +111,7 @@ const ChatRoom = ({ params }) => {
         setActive([...users.values()]);
       };
       const errorRequestHandler = (data) => {
-        console.log("ERROR JOINING CHAT ROOM");
+        console.log("ERROR JOINING CHAT ROOM", data);
       };
       const addOnlineRequestHandler = (data) => {
         console.log("USER JOINED CHAT");

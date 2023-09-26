@@ -22,14 +22,14 @@ export const OutputFetch = (type, group, query, api) => {
   if (group) {
     output.push(chalk.bold.cyanBright.bgGray(" " + group + " "));
   }
-  output.push(chalk.bold.whiteBright("@"));
+  output.push(chalk.bold.bgBlack.redBright(" > "));
   let splitQuery = [];
   query.forEach((param) => splitQuery.push(param));
   output.push(
     chalk.bold.black.bgWhiteBright(" " + splitQuery.join(", ") + " ")
   );
   if (api) {
-    output.push(chalk.bold.greenBright(" " + api + " "));
+    output.push(chalk.bold.greenBright.bgBlack(" " + api + " "));
   }
-  return output.join(" ");
+  return output.join("");
 };

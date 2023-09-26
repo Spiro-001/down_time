@@ -4,7 +4,6 @@ import { gsap } from "gsap";
 import React, { useEffect, useRef, useState } from "react";
 
 const SendMessage = ({ chatId, myId, active }) => {
-  console.log(active);
   const inputRef = useRef(null);
   const formRef = useRef(null);
 

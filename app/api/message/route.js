@@ -44,7 +44,6 @@ export const POST = async (req, res) => {
 
     // console.log(`PATCH chatUser @ id: ${otherUser.id}`);
     // check if this is neccesary
-    console.log(active);
     if (
       [chatData.users[0].userId, chatData.users[1].userId].sort().join("") !==
       active.sort().join("")
