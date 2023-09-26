@@ -5,7 +5,7 @@ import { toPusherKey } from "@/utils/toPusherKey";
 export const DELETE = async (req, { params }) => {
   const { chatId } = params;
   try {
-    console.log(`DELETE chat @ id: ${chatId}`);
+    console.log(`GET chat @ id: ${chatId}`);
     const chat = await prisma.chat.findUnique({
       where: {
         id: chatId,
@@ -13,7 +13,7 @@ export const DELETE = async (req, { params }) => {
       select: {
         users: {
           select: {
-            user: {
+            users: {
               select: {
                 id: true,
                 membership: true,
@@ -30,36 +30,36 @@ export const DELETE = async (req, { params }) => {
         id: chatId,
       },
     });
-
+    console.log(`DELETE chat @ id: ${chatId}`);
     console.log(
-      `Pusher @ ${toPusherKey(`user:${chat.users[0].user.id}:delete-chat`)}`
+      `Pusher @ ${toPusherKey(`user:${chat.users[0].users.id}:delete-chat`)}`
     );
     console.log(
-      `Pusher @ ${toPusherKey(`user:${chat.users[1].user.id}:delete-chat`)}`
+      `Pusher @ ${toPusherKey(`user:${chat.users[1].users.id}:delete-chat`)}`
     );
     console.log(
-      `Pusher @ ${toPusherKey(`user:${chat.users[0].user.id}:update-chat`)}`
+      `Pusher @ ${toPusherKey(`user:${chat.users[0].users.id}:update-chat`)}`
     );
     console.log(
-      `Pusher @ ${toPusherKey(`user:${chat.users[1].user.id}:update-chat`)}`
+      `Pusher @ ${toPusherKey(`user:${chat.users[1].users.id}:update-chat`)}`
     );
     pusherServer.trigger(
-      toPusherKey(`user:${chat.users[0].user.id}:delete-chat`),
+      toPusherKey(`user:${chat.users[0].users.id}:delete-chat`),
       "delete-chat",
       { ...chat, deletedChat }
     );
     pusherServer.trigger(
-      toPusherKey(`user:${chat.users[1].user.id}:delete-chat`),
+      toPusherKey(`user:${chat.users[1].users.id}:delete-chat`),
       "delete-chat",
       { ...chat, deletedChat }
     );
     pusherServer.trigger(
-      toPusherKey(`user:${chat.users[0].user.id}:update-chat`),
+      toPusherKey(`user:${chat.users[0].users.id}:update-chat`),
       "update-chat",
       { ...chat, deletedChat }
     );
     pusherServer.trigger(
-      toPusherKey(`user:${chat.users[1].user.id}:update-chat`),
+      toPusherKey(`user:${chat.users[1].users.id}:update-chat`),
       "update-chat",
       { ...chat, deletedChat }
     );

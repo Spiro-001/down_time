@@ -3,6 +3,7 @@ import prisma from "@/prisma/client";
 export const GET = async (req, { params }) => {
   const { chatId } = params;
   try {
+    console.log(`GET chat @ id: ${chatId}`);
     const data = await prisma.chat.findUnique({
       where: {
         id: chatId,

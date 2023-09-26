@@ -205,7 +205,7 @@ const MyChats = ({ data }) => {
           onKeyDown={handleSubmit}
         >
           {chat.chat.name}
-          {chat.notifications !== 0 && (
+          {chat.notifications > 0 && (
             <span className="ml-auto bg-red-200 px-2 text-sm h-full flex items-center font-bold rounded-md">
               {chat.notifications > 99 ? "99+" : chat.notifications}
             </span>

@@ -94,7 +94,7 @@ const ChatRoom = ({ params }) => {
         }
       };
       pusherClient.subscribe(
-        toPusherKey(`user:${params.slug}:incoming_message`)
+        toPusherKey(`chat:${params.slug}:incoming_message`)
       );
       pusherClient.subscribe(toPusherKey(`user:${params.slug}:typing_message`));
       pusherClient.subscribe(toPusherKey(`chat:${params.slug}:update_chat`));
@@ -139,7 +139,7 @@ const ChatRoom = ({ params }) => {
       clearNotification();
       return () => {
         pusherClient.unsubscribe(
-          toPusherKey(`user:${params.slug}:incoming_message`)
+          toPusherKey(`chat:${params.slug}:incoming_message`)
         );
         pusherClient.unsubscribe(
           toPusherKey(`user:${params.slug}:typing_message`)

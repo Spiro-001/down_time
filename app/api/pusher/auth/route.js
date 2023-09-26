@@ -7,6 +7,7 @@ export const POST = async (req, res) => {
     const data = await parsePusher(req.body);
     const { id, username, email, membership } = data;
 
+    console.log(`GET user @ id: ${id}`);
     const userData = await prisma.user.findUnique({
       where: {
         id,
@@ -46,7 +47,9 @@ export const POST = async (req, res) => {
             membership,
           },
         };
-
+        console.log(
+          `Pusher @ AUTH [SOCKET_ID: ${socketId}, CHANNEL: ${channel}]`
+        );
         const authResponse = pusherServer.authorizeChannel(
           socketId,
           channel,

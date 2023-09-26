@@ -187,21 +187,21 @@ const NewConnection = ({ userInfo, chats, setSearching }) => {
     };
     pusherClient.subscribe(toPusherKey(`user:${userInfo.id}:delete-chat`));
     pusherClient.subscribe(toPusherKey(`user:${userInfo.id}:add-chat`));
-    pusherClient.subscribe(toPusherKey(`user:${userInfo.id}:match-request`));
+    pusherClient.subscribe(toPusherKey(`user:${userInfo.id}:match_request`));
     pusherClient.bind("delete-chat", deleteRequestHandler);
     pusherClient.bind("add-chat", updateRequestHandler);
-    pusherClient.bind("match-request", matchRequestHandler);
+    pusherClient.bind("match_request", matchRequestHandler);
     presenceChannelBinder(userInfo, fns);
     return () => {
       presenceChannelUnBinder(fns);
       pusherClient.unsubscribe(toPusherKey(`user:${userInfo.id}:delete-chat`));
       pusherClient.unsubscribe(toPusherKey(`user:${userInfo.id}:add-chat`));
       pusherClient.unsubscribe(
-        toPusherKey(`user:${userInfo.id}:match-request`)
+        toPusherKey(`user:${userInfo.id}:match_request`)
       );
       pusherClient.unbind("delete-chat", deleteRequestHandler);
       pusherClient.unbind("add-chat", updateRequestHandler);
-      pusherClient.unbind("match-request", matchRequestHandler);
+      pusherClient.unbind("match_request", matchRequestHandler);
     };
   }, []);
 

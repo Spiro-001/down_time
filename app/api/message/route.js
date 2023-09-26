@@ -5,6 +5,7 @@ import prisma from "@/prisma/client";
 export const POST = async (req, res) => {
   try {
     const { userId, message, chatId } = await req.json();
+    console.log(`GET chat @ id: ${chatId}`);
     const chatData = await prisma.chat.findUnique({
       where: {
         id: chatId,
@@ -13,6 +14,7 @@ export const POST = async (req, res) => {
         users: true,
       },
     });
+    console.log(`POST message @ author: ${userId}, chatId: ${chatId}`);
     const data = await prisma.message.create({
       include: {
         author: true,
@@ -29,6 +31,7 @@ export const POST = async (req, res) => {
         ? chatData.users[1]
         : chatData.users[0];
 
+    console.log(`PATCH chatUser @ id: ${otherUser.id}`);
     const updatedChat = await prisma.chatUser.update({
       where: {
         id: otherUser.id,
@@ -49,8 +52,9 @@ export const POST = async (req, res) => {
         }:add_message_notification`
       )}`
     );
+    console.log(`Pusher @ ${toPusherKey(`chat:${chatId}:incoming_message`)}`);
     pusherServer.trigger(
-      toPusherKey(`user:${chatId}:incoming_message`),
+      toPusherKey(`chat:${chatId}:incoming_message`),
       "incoming_message",
       data
     );

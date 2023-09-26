@@ -5,6 +5,7 @@ export const POST = async (req, { params }) => {
   const { chatId } = params;
   const { userId, typing } = await req.json();
   try {
+    console.log(`Pusher @ ${toPusherKey(`user:${chatId}:typing_message`)}`);
     pusherServer.trigger(
       toPusherKey(`user:${chatId}:typing_message`),
       "typing_message",
